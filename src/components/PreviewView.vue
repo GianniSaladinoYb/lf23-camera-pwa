@@ -16,10 +16,18 @@ onUnmounted(() => {
   if (imageUrl.value) URL.revokeObjectURL(imageUrl.value)
 })
 
+function saveToDevice() {
+  const link = document.createElement('a')
+  link.href = imageUrl.value
+  link.download = `campana_${Date.now()}.jpg`
+  link.click()
+}
+
 async function send() {
   loading.value = true
   error.value = null
   try {
+    saveToDevice()
     const data = await analyzeImage(props.image)
     emit('result', data)
   } catch (err) {
