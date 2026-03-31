@@ -1,14 +1,12 @@
 <script setup>
 import { ref, computed, onUnmounted } from 'vue'
-import { analyzeImage } from '../api.js'
 
 const props = defineProps({
   image: { type: Blob, required: true }
 })
 
-const emit = defineEmits(['retake', 'result'])
+const emit = defineEmits(['retake', 'sent'])
 
-const loading = ref(false)
 const error = ref(null)
 const imageUrl = computed(() => URL.createObjectURL(props.image))
 
@@ -16,33 +14,28 @@ onUnmounted(() => {
   if (imageUrl.value) URL.revokeObjectURL(imageUrl.value)
 })
 
-async function saveToDevice() {
-  const file = new File([props.image], `campana_${Date.now()}.jpg`, { type: 'image/jpeg' })
-
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    await navigator.share({
-      files: [file],
-      title: 'CampanaCheck'
-    })
-  } else {
-    const link = document.createElement('a')
-    link.href = imageUrl.value
-    link.download = file.name
-    link.click()
-  }
-}
-
 async function send() {
-  loading.value = true
   error.value = null
   try {
-    saveToDevice()
-    const data = await analyzeImage(props.image)
-    emit('result', data)
+    const file = new File([props.image], `campana_${Date.now()}.jpg`, { type: 'image/jpeg' })
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: 'CampanaCheck'
+      })
+    } else {
+      const link = document.createElement('a')
+      link.href = imageUrl.value
+      link.download = file.name
+      link.click()
+    }
+
+    emit('sent')
   } catch (err) {
-    error.value = 'Errore durante l\'invio. Riprova.'
-  } finally {
-    loading.value = false
+    if (err.name !== 'AbortError') {
+      error.value = 'Errore durante il salvataggio. Riprova.'
+    }
   }
 }
 </script>
@@ -54,14 +47,9 @@ async function send() {
     <div class="preview-overlay">
       <p v-if="error" class="error-msg">{{ error }}</p>
 
-      <div v-if="loading" class="loading">
-        <div class="spinner" />
-        <p>Analisi in corso...</p>
-      </div>
-
-      <div v-else class="actions">
+      <div class="actions">
         <button class="btn btn-retake" @click="$emit('retake')">Ripeti</button>
-        <button class="btn btn-send" @click="send">Invia</button>
+        <button class="btn btn-send" @click="send">Salva</button>
       </div>
     </div>
   </div>
@@ -125,28 +113,6 @@ async function send() {
 
 .btn-send:active {
   background: #22c55e;
-}
-
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  color: #fff;
-  font-size: 16px;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 .error-msg {
