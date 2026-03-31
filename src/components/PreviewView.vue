@@ -16,11 +16,20 @@ onUnmounted(() => {
   if (imageUrl.value) URL.revokeObjectURL(imageUrl.value)
 })
 
-function saveToDevice() {
-  const link = document.createElement('a')
-  link.href = imageUrl.value
-  link.download = `campana_${Date.now()}.jpg`
-  link.click()
+async function saveToDevice() {
+  const file = new File([props.image], `campana_${Date.now()}.jpg`, { type: 'image/jpeg' })
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    await navigator.share({
+      files: [file],
+      title: 'CampanaCheck'
+    })
+  } else {
+    const link = document.createElement('a')
+    link.href = imageUrl.value
+    link.download = file.name
+    link.click()
+  }
 }
 
 async function send() {
