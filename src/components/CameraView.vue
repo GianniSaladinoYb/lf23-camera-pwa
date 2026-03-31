@@ -6,6 +6,7 @@ const emit = defineEmits(['capture'])
 
 const videoRef = ref(null)
 const canvasRef = ref(null)
+const guideRef = ref(null)
 const stream = ref(null)
 const cameraError = ref(null)
 
@@ -37,21 +38,56 @@ function stopCamera() {
 function capture() {
   const video = videoRef.value
   const canvas = canvasRef.value
-  if (!video || !canvas) return
+  const guide = guideRef.value
+  if (!video || !canvas || !guide) return
 
-  // Calcola dimensioni rispettando MAX_IMAGE_SIZE sul lato lungo
-  let w = video.videoWidth
-  let h = video.videoHeight
-  if (Math.max(w, h) > MAX_IMAGE_SIZE) {
-    const scale = MAX_IMAGE_SIZE / Math.max(w, h)
-    w = Math.round(w * scale)
-    h = Math.round(h * scale)
+  const vidW = video.videoWidth
+  const vidH = video.videoHeight
+  const elemW = video.clientWidth
+  const elemH = video.clientHeight
+
+  // Calcola come object-fit:cover scala il video
+  const elemRatio = elemW / elemH
+  const vidRatio = vidW / vidH
+
+  let srcX = 0, srcY = 0, srcW = vidW, srcH = vidH
+  if (vidRatio > elemRatio) {
+    // Video piu' largo: bande laterali tagliate
+    srcW = vidH * elemRatio
+    srcX = (vidW - srcW) / 2
+  } else {
+    // Video piu' alto: bande sopra/sotto tagliate
+    srcH = vidW / elemRatio
+    srcY = (vidH - srcH) / 2
   }
 
-  canvas.width = w
-  canvas.height = h
+  // Posizione del mirino rispetto al video element
+  const guideRect = guide.getBoundingClientRect()
+  const videoRect = video.getBoundingClientRect()
+  const relX = (guideRect.left - videoRect.left) / elemW
+  const relY = (guideRect.top - videoRect.top) / elemH
+  const relW = guideRect.width / elemW
+  const relH = guideRect.height / elemH
+
+  // Mappa sul frame video reale
+  const cropX = Math.round(srcX + relX * srcW)
+  const cropY = Math.round(srcY + relY * srcH)
+  const cropW = Math.round(relW * srcW)
+  const cropH = Math.round(relH * srcH)
+
+  // Dimensione output rispettando MAX_IMAGE_SIZE
+  let outW = cropW
+  let outH = cropH
+  if (Math.max(outW, outH) > MAX_IMAGE_SIZE) {
+    const scale = MAX_IMAGE_SIZE / Math.max(outW, outH)
+    outW = Math.round(outW * scale)
+    outH = Math.round(outH * scale)
+  }
+
+  canvas.width = outW
+  canvas.height = outH
   const ctx = canvas.getContext('2d')
-  ctx.drawImage(video, 0, 0, w, h)
+  ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, outW, outH)
 
   canvas.toBlob(
     (blob) => {
@@ -86,7 +122,7 @@ onUnmounted(stopCamera)
     <!-- Overlay mirino -->
     <div v-if="!cameraError" class="overlay">
       <div class="overlay-mask">
-        <div class="guide-shape">
+        <div ref="guideRef" class="guide-shape">
           <div class="corner top-left" />
           <div class="corner top-right" />
           <div class="corner bottom-left" />
