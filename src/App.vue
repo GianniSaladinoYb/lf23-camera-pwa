@@ -6,7 +6,7 @@ import InstructionPopup from './components/InstructionPopup.vue'
 import RecapView from './components/RecapView.vue'
 import { useGeolocation } from './composables/useGeolocation.js'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const API_URL = import.meta.env.VITE_API_URL || 'https://lf23-camera-pwa-backend.onrender.com'
 
 const screen = ref('popup') // 'popup' | 'camera' | 'preview' | 'saving' | 'recap'
 const capturedImage = ref(null)
