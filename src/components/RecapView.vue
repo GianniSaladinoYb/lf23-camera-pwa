@@ -1,4 +1,6 @@
 <script setup>
+import { ref, onMounted } from 'vue'
+
 const props = defineProps({
   giorno: { type: String, required: true },
   ora: { type: String, required: true },
@@ -6,11 +8,14 @@ const props = defineProps({
   longitudine: { type: Number, default: null }
 })
 
-defineEmits(['close'])
+const canClose = ref(true)
 
-function chiudi() {
+onMounted(() => {
   window.close()
-}
+  setTimeout(() => {
+    canClose.value = false
+  }, 500)
+})
 </script>
 
 <template>
@@ -37,7 +42,7 @@ function chiudi() {
         </div>
       </div>
 
-      <button class="btn-close" @click="chiudi">Chiudi</button>
+      <p v-if="!canClose" class="close-msg">Sessione completata, chiudere l'app</p>
     </div>
   </div>
 </template>
@@ -111,18 +116,10 @@ function chiudi() {
   color: rgba(255, 255, 255, 0.3);
 }
 
-.btn-close {
+.close-msg {
   margin-top: 12px;
-  width: 100%;
-  padding: 18px;
-  border-radius: 14px;
-  background: #ef4444;
-  color: #fff;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.btn-close:active {
-  background: #dc2626;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
 }
 </style>
