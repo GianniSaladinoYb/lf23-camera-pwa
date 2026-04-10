@@ -1,14 +1,12 @@
 <script setup>
-import { ref } from 'vue'
-
-const props = defineProps({
+defineProps({
   giorno: { type: String, required: true },
   ora: { type: String, required: true },
   latitudine: { type: Number, default: null },
   longitudine: { type: Number, default: null }
 })
 
-const canClose = ref(false)
+defineEmits(['new-scan'])
 </script>
 
 <template>
@@ -35,7 +33,7 @@ const canClose = ref(false)
         </div>
       </div>
 
-      <p v-if="!canClose" class="close-msg">Sessione completata, chiudere l'app</p>
+      <button class="btn-new-scan" @click="$emit('new-scan')">Scansiona nuova campana</button>
     </div>
   </div>
 </template>
@@ -109,15 +107,19 @@ const canClose = ref(false)
   color: rgba(255, 255, 255, 0.3);
 }
 
-.close-msg {
+.btn-new-scan {
   margin-top: 12px;
   width: 100%;
   padding: 18px;
   border-radius: 14px;
-  background: #ef4444;
-  color: #fff;
+  background: #4ade80;
+  color: #1a1a2e;
   font-size: 18px;
   font-weight: 600;
   text-align: center;
+}
+
+.btn-new-scan:active {
+  background: #22c55e;
 }
 </style>

@@ -31,6 +31,12 @@ function onRetake() {
   screen.value = 'camera'
 }
 
+function onNewScan() {
+  capturedImage.value = null
+  savedRecord.value = null
+  screen.value = 'camera'
+}
+
 async function onSave() {
   screen.value = 'saving'
 
@@ -81,6 +87,7 @@ async function onSave() {
     :ora="savedRecord.ora"
     :latitudine="savedRecord.latitudine"
     :longitudine="savedRecord.longitudine"
+    @new-scan="onNewScan"
   />
 </template>
 
