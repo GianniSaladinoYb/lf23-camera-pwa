@@ -30,8 +30,10 @@ app.post('/api/foto', upload.single('foto'), async (req, res) => {
     }
 
     const now = new Date()
-    const giorno = now.toISOString().split('T')[0]
-    const ora = now.toTimeString().split(' ')[0]
+    const itDate = now.toLocaleDateString('it-IT', { timeZone: 'Europe/Rome' })
+    const parts = itDate.split('/')
+    const giorno = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`
+    const ora = now.toLocaleTimeString('it-IT', { timeZone: 'Europe/Rome', hour12: false })
 
     const result = await pool.query(
       'INSERT INTO "APP_MOBILE_foto_campane" (giorno, ora, latitudine, longitudine, foto) VALUES ($1, $2, $3, $4, $5) RETURNING id, giorno, ora, latitudine, longitudine',

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 
 const props = defineProps({
   giorno: { type: String, required: true },
@@ -8,14 +8,7 @@ const props = defineProps({
   longitudine: { type: Number, default: null }
 })
 
-const canClose = ref(true)
-
-onMounted(() => {
-  window.close()
-  setTimeout(() => {
-    canClose.value = false
-  }, 500)
-})
+const canClose = ref(false)
 </script>
 
 <template>
@@ -118,8 +111,13 @@ onMounted(() => {
 
 .close-msg {
   margin-top: 12px;
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.5);
+  width: 100%;
+  padding: 18px;
+  border-radius: 14px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
   text-align: center;
 }
 </style>
