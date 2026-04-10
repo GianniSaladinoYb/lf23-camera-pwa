@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import multer from 'multer'
@@ -10,11 +11,12 @@ app.use(cors())
 app.use(express.json())
 
 const pool = new pg.Pool({
-  host: 'localhost',
-  port: 5432,
-  database: 'campanacheck',
-  user: 'postgres',
-  password: 'Gianni2003'
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
 })
 
 // POST /api/foto - salva foto con coordinate
@@ -32,7 +34,7 @@ app.post('/api/foto', upload.single('foto'), async (req, res) => {
     const ora = now.toTimeString().split(' ')[0]
 
     const result = await pool.query(
-      'INSERT INTO fotos (giorno, ora, latitudine, longitudine, foto) VALUES ($1, $2, $3, $4, $5) RETURNING id, giorno, ora, latitudine, longitudine',
+      'INSERT INTO "APP_MOBILE_foto_campane" (giorno, ora, latitudine, longitudine, foto) VALUES ($1, $2, $3, $4, $5) RETURNING id, giorno, ora, latitudine, longitudine',
       [giorno, ora, latitudine || null, longitudine || null, foto]
     )
 
